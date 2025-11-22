@@ -263,7 +263,7 @@ document.getElementById('next3').onclick = () => {
 };
 document.getElementById('prev4').onclick = () => { step4.classList.add('hidden'); step3.classList.remove('hidden'); };
 
-// Final send - HAGAJI QAYBTAN
+// Final send
 sendWizardBtn.onclick = () => {
   sendStatus.textContent='';
   const contact = session?.contact;
@@ -274,43 +274,14 @@ sendWizardBtn.onclick = () => {
   const memoVal = wizardMemo.value;
 
   if(sender.balance < amt){ sendStatus.textContent='Balance ma filna'; return;}
-  
-  // HAGAJI: Ka hel user-ka saxda ah
-  let recipient = null;
-  for(const key in users) {
-    if(key === recipientContact) {
-      recipient = users[key];
-      break;
-    }
+  if(!users[recipientContact]){
+    users[recipientContact]={ name:'Unknown', address:generateAddress(), balance:0, createdAt:nowTs() };
   }
-  
-  // Haddii aan la helin, samee cusub
-  if(!recipient) {
-    users[recipientContact] = { 
-      name: 'Unknown', 
-      password: 'default', 
-      address: generateAddress(), 
-      balance: 0, 
-      createdAt: nowTs() 
-    };
-    recipient = users[recipientContact];
-    DB.set('laam_users', users);
-  }
+  const recipient = users[recipientContact];
 
-  const tx = { 
-    txHash:'0x'+uid(12), 
-    fromAddr:sender.address, 
-    toAddr:recipient.address, 
-    amount:amt, 
-    memo:memoVal, 
-    ts:nowTs() 
-  };
-  
-  const txs = DB.get('laam_txs'); 
-  txs.push(tx); 
-  DB.set('laam_txs', txs);
+  const tx = { txHash:'0x'+uid(12), fromAddr:sender.address, toAddr:recipient.address, amount:amt, memo:memoVal, ts:nowTs() };
+  const txs = DB.get('laam_txs'); txs.push(tx); DB.set('laam_txs', txs);
 
-  // HAGAJI: Beddel xisaabta
   sender.balance -= amt;
   recipient.balance += amt;
   DB.set('laam_users', users);
